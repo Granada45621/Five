@@ -1,0 +1,21 @@
+{
+	"name" : "Five",
+	"version" : "0.0.1",
+	"description" : "Online Multiplayer Game",
+	"engines" : {
+		"node" : "8.9.3"
+	},
+	"main" : "index.js",
+	"scripts" : {
+		"start" : "node index.js"
+	},
+	"dependencies" : {
+		"express" : "^4.16.2",
+		"socket.io" : "^2.0.3"
+	},
+	"repository" : {
+		"type" : "git",
+		"url" : "https://github.com/Granada45621/five"
+	},
+	"license" : "MIT"
+}
