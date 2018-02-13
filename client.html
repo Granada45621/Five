@@ -115,7 +115,7 @@
 			</div>
 		</section>
 	</div>
-	<canvas id="canvas"></canvas>
+	<canvas id="canvas" oncontextmenu="return false;"></canvas>
 	
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
 	<script src="./jiy_modules/vector.js"></script>
@@ -282,12 +282,12 @@
 				
 				var pos = new Vector(0,0).Set(fairy.pos).Sub(_offset);
 				
-				_ctx.font = "0.8em Ubuntu";
+				_ctx.font = "0.9em Ubuntu";
 				
 				_ctx.fillStyle = 'black';
 				
 				_ctx.textAlign = "center";
-				_ctx.fillText(fairy.name, pos.x, pos.y-20);
+				_ctx.fillText(fairy.name, pos.x, pos.y+25);
 				
 				_ctx.fillRect( pos.x-10, pos.y-10, 20, 20 );
 			}

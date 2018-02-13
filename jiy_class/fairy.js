@@ -26,45 +26,46 @@ class Fairy {
 		
 		// Gravity
 		this.velocity.y += (10 / 1000) * tick;
-
+		
 		if (this.velocity.y >= 20) {
 			this.velocity.y = 20;
 		} else if (this.velocity.y <= -20) {
 			this.velocity.y = -20;
 		}
-
+		
 		if (this.velocity.x >= 6) {
 			this.velocity.x = 6;
 		} else if (this.velocity.x <= -6) {
 			this.velocity.x = -6;
 		}
-
+		
 		// Y Collide
 		var collide = false;
-
+		
 		if (this.velocity.y > 0) {
 			var pos = this.pos.Get_Clone().Add([0,this.velocity.y+10]);	// Down
 			var cell_pos = new Vector( parseInt(pos.x/size), parseInt(pos.y/size) );
-
+			
 			if (cell_pos.Check_Range(0,_map.size.x,0,_map.size.y)) {
 				var going = _map.map[cell_pos.y][cell_pos.x];
 				if (going.type == 'wall')
 					collide = ['down', cell_pos];
-			} else
+			} else {
 				collide = ['down', cell_pos];
-
+			}
 		} else if (this.velocity.y < 0) {
 			var pos = this.pos.Get_Clone().Add([0,this.velocity.y-10]);	// Up
 			var cell_pos = new Vector( parseInt(pos.x/size), parseInt(pos.y/size) );
-
+			
 			if (cell_pos.Check_Range(0,_map.size.x,0,_map.size.y)) {
 				var going = _map.map[cell_pos.y][cell_pos.x];
 				if (going.type == 'wall')
 					collide = ['top', cell_pos];
-			} else
+			} else {
 				collide = ['top', cell_pos];
+			}
 		}
-
+		
 		if (collide) {
 			this.velocity.y = 0;
 			if (collide[0] == 'down') {
@@ -74,33 +75,34 @@ class Fairy {
 				this.pos.y = collide[1].Get_Clone().Mul([size,size]).Add([0,size]).Sub([0,10]).y;
 			}
 		}
-
+		
 		// X Collide
 		var collide = false;
-
+		
 		if (this.velocity.x > 0) {
 			var pos = this.pos.Get_Clone().Add([this.velocity.x+10,0]);	// Right
 			var cell_pos = new Vector( parseInt(pos.x/size), parseInt(pos.y/size) );
-
+			
 			if (cell_pos.Check_Range(0,_map.size.x,0,_map.size.y)) {
 				var going = _map.map[cell_pos.y][cell_pos.x];
 				if (going.type == 'wall')
 					collide = ['right', cell_pos];
-			} else
+			} else {
 				collide = ['right', cell_pos];
-
+			}
 		} else if (this.velocity.x < 0) {
 			var pos = this.pos.Get_Clone().Add([this.velocity.x-10,0]);	// Left
 			var cell_pos = new Vector( parseInt(pos.x/size), parseInt(pos.y/size) );
-
+			
 			if (cell_pos.Check_Range(0,_map.size.x,0,_map.size.y)) {
 				var going = _map.map[cell_pos.y][cell_pos.x];
 				if (going.type == 'wall')
 					collide = ['left', cell_pos];
-			} else
+			} else {
 				collide = ['left', cell_pos];
+			}
 		}
-
+		
 		if (collide) {
 			this.velocity.x = 0;
 			if (collide[0] == 'right') {
