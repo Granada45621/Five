@@ -220,6 +220,8 @@
 				
 				document.getElementById('login').style.display = 'none';
 				document.getElementById('canvas').style.display = 'block';
+				
+				Event();
 			}
 		}
 		
@@ -282,11 +284,11 @@
 				
 				var pos = new Vector(0,0).Set(fairy.pos).Sub(_offset);
 				
-				_ctx.font = "0.9em Ubuntu";
+				_ctx.font = '0.9em Ubuntu';
 				
 				_ctx.fillStyle = 'black';
 				
-				_ctx.textAlign = "center";
+				_ctx.textAlign = 'center';
 				_ctx.fillText(fairy.name, pos.x, pos.y+25);
 				
 				_ctx.fillRect( pos.x-10, pos.y-10, 20, 20 );
@@ -323,6 +325,25 @@
 				Main_Loop();
 			}
 		});
+		
+		// Event
+		function Event() {
+			document.addEventListener("keydown", function(e) {
+				_socket.emit('event', {type: 'keydown'});
+			}, false);
+			
+			document.addEventListener("mousemove", function(e) {
+				var pos = new Vector(0,0)
+				pos.x = e.clientX - window.innerWidth/2;
+				pos.y = e.clientY - window.innerHeight/2;
+				
+				_socket.emit('event', {type: 'mousemove', pos: pos});
+			}, false);
+			
+			document.addEventListener("mousedown", function(e) {
+				_socket.emit('event', {type: 'mousedown', button: e.button});
+			}, false);
+		}
 	</script>
 </body>
 </html>

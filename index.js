@@ -64,6 +64,7 @@ function Join_Game(data, socket) {
 		
 		pos : false,
 		velocity : new Vector(0,0),
+		movevelocity : new Vector(0,0),
 		
 		focus : 10
 	};
@@ -122,12 +123,29 @@ io.on('connection', function(socket) {
 			socket.emit('joinGame', {check : false});
 		} else {
 			player = Join_Game(data, socket);
+			event = {};
 			socket.emit('joinGame', {check : true});
 		}
 	});
 	
+	// Event
+	socket.on('event', function(data) {
+		if (player){
+			switch(data.type) {
+				case 'mousemove':
+					player.event.mousepos = data.pos;
+					break;
+				case 'mousedown':
+					if (data.button == 2){
+						player.event.jump = true;
+					}
+					break;
+			}
+		}
+	});
+	
 	// Data
-	socket.on('data', function(name){
+	socket.on('data', function(name) {
 		var type;
 		var data;
 		
