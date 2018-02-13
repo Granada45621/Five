@@ -145,7 +145,9 @@ io.on('connection', function(socket) {
 	});
 	
 	socket.on('disconnect', function() {
-		delete _fairys[player.name];
+		if (player.name) {
+			delete _fairys[player.name];
+		}
 		console.log('a user disconnected');
 	});
 });
