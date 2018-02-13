@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Five</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Tillana');
+		* { margin: 0; padding: 0; font-family: 'Tillana', cursive; }
+		
+		small { font-size: 0.8em; }
+		
+		button {
+			background: black;
+			color: white;
+			
+			font-size: 1em;
+			
+			padding: 5px 20px;
+			
+			border: 1px solid black;
+			border-radius: 10px;
+			
+			transition: 0.2s;
+		}
+		button:hover {
+			background: white;
+			color: black;
+		}
+		
+		#canvas { display: none; background: black; }
+		
+		#login {
+			display: flex;
+			text-align: center;
+		}
+		#login > section {
+			flex: 1;
+			padding: 20px;
+		}
+		
+		.ability_box {
+			display: inline-block;
+			
+			padding: 10px 40px;
+			
+			border: 1px solid black;
+			border-radius: 20px;
+			
+			transition: 0.1s;
+		}
+		.ability_box:hover {
+			background: black;
+			color: white;
+			
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<div id="login">
+		<section>
+			<h2>Fairy Info</h2>
+			<br>
+			<div>
+				<h3>조종</h3>
+				<p>마우스 위치에 따라서 방향을 정한다(오른쪽, 왼쪽).</p>
+				<p>마우스 오른쪽 클릭으로 점프한다.</p>
+				<p>[Q,W,E,R][A,S,D,F] 8가지 키로 스킬을 사용할 수 있다.</p>
+			</div>
+			<br>
+			<div>
+				<h3>속성</h3>
+				<p>지능 : 마나, 마나 회복</p>
+				<p>민첩 : 속도, 회피</p>
+				<p>체력 : 체력, 체력 회복</p>
+				<p>힘 : 데미지</p>
+				<p>방어 : 마법 저항, 방어</p>
+			</div>
+			<br>
+			<div>
+				<h3>스킬</h3>
+				<p>상점에서 고를 수 있다.</p>
+				<p>능력에 따라서 사용할 수 있는 스킬이 달라진다.</p>
+				<p>스킬 숙련도와 캐릭터의 속성에 따라서 성능이 달라진다.</p>
+				<br>
+				<p>지능 : 마나소모, 범위</p>
+				<p>민첩 : 속도, 쿨타임</p>
+				<p>체력 : 범위, 속도</p>
+				<p>힘 : 데미지, 마나소모</p>
+				<p>방어 : 쿨타임, 데미지</p>
+			</div>
+		</section>
+		<section>
+			<h2>User Profile</h2>
+			<br>
+			<div>
+				캐릭터 이름 : <input id="player_name" type="text" name="name" size="30" value="Granada">
+			</div>
+			<br>
+			<div>
+				<header>
+					<h3>Choice Ability</h3>
+					<!--<small>2개 까지 선택 가능</small>-->
+				</header>
+				<article id="ability_wrap">
+					<!--
+					<div class="ability_box" onclick="">
+						<h3>Dagger</h3>
+					</div>
+					-->
+				</article>
+			</div>
+			<br>
+			<div>
+				<button onclick="Join_Game();">Get In Game</button>
+			</div>
+		</section>
+	</div>
+	<canvas id="canvas"></canvas>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+	<script src="./jiy_modules/vector.js"></script>
+	<script>
+		// Socket Connect
+		var _socket = io();
+		
+		var _profile;
+		
+		var _canvas;
+		var _ctx;
+		
+		var _map;
+		var _offset;
+		
+		var _state;
+		
+		var _fairys;
+		
+		function Init() {
+			// Canvas Draw Setting
+			_canvas = document.getElementById('canvas');
+			_ctx = canvas.getContext('2d');
+			
+			// Canvas Size Fit Window Size
+			_canvas.setAttribute("width", window.innerWidth);
+			_canvas.setAttribute("height", window.innerHeight);
+			
+			// Profile Setting
+			_profile = {
+				name : false,
+				ability : false
+			};
+			
+			// State Init
+			_state = false;
+			
+			// Offset
+			_offset = new Vector(0,0);
+		}
+		
+		// Before Start Game
+		function Join_Game() {
+			_profile.name = document.getElementById('player_name').value;
+			
+			if (_profile.name && _profile.ability) {
+				_socket.emit('joinGame', _profile);
+			} else {
+				alert('이름을 입력하고 능력을 선택해 주세요.');
+			}
+		}
+		
+		function Set_Ability(data) {
+			var wrap = document.getElementById('ability_wrap');
+			var text = '';
+			
+			for (var t = 0, len = data.length; t < len; t++) {
+				var str = data[t];
+				var ab = str.charAt(0).toUpperCase() + str.slice(1);
+				
+				text += `
+					<div class="ability_box" onclick="Select_Ability('${str}');">
+						<h3>${ab}</h3>
+					</div>
+				`;
+			}
+			
+			wrap.innerHTML = text;
+		}
+		
+		function Select_Ability(name) {
+			_profile.ability = name;
+			
+			var wrap = document.getElementById('ability_wrap');
+			var text = '';
+			
+			var str = name;
+			var ab = str.charAt(0).toUpperCase() + str.slice(1);
+
+			text += `
+				<div class="ability_box">
+					<h3>${ab}</h3>
+				</div>
+			`;
+			
+			wrap.innerHTML = text;
+		}
+		
+		// Loop
+		function Main_Loop() {
+			_state.exe();
+			
+			requestAnimationFrame(Main_Loop);
+		}
+		
+		// Wating Data Setting
+		function Wait_Data() {
+			if (_map && _fairys) {
+				_state = {
+					exe : Game_Play
+				};
+				
+				document.getElementById('login').style.display = 'none';
+				document.getElementById('canvas').style.display = 'block';
+			}
+		}
+		
+		// Game Play
+		function Game_Play() {
+			_ctx.clearRect(0, 0, _canvas.width, _canvas.height);
+			
+			Camera();
+			
+			// Draw
+			Draw_Map();
+			Draw_Fairys();
+		}
+		
+		function Camera() {
+			var tar = _fairys[_profile.name];
+			
+			var x = tar.pos.x - window.innerWidth/2;
+			var y = tar.pos.y - window.innerHeight/2;
+			
+			_offset.Set([x,y]);
+		}
+		
+		// Draw
+		function Draw_Map() {
+			var Tsize = _map.tile.size;
+			
+			var start = new Vector(0,0);
+			start.x = parseInt(_offset.x / Tsize)-1;
+			start.y = parseInt(_offset.y / Tsize)-1;
+			
+			var end = new Vector(0,0);
+			end.x = parseInt((_offset.x+window.innerWidth) / Tsize)+1;
+			end.y = parseInt((_offset.y+window.innerHeight) / Tsize)+1;
+			
+			for (var y = start.y; y < end.y; y++) {
+				for (var x = start.x; x < end.x; x++) {
+					// Check Range
+					if (new Vector(x,y).Check_Range(1,_map.size.x,1,_map.size.y) == false) {
+						continue;
+					}
+					
+					var cell = _map.map[y][x];
+					var color = 'white';
+					
+					if (cell.type == 'wall'){
+						color = 'gray';
+					}
+					
+					_ctx.fillStyle = color;
+					_ctx.fillRect( x*Tsize-_offset.x, y*Tsize-_offset.y, Tsize-0.1, Tsize-0.1 );
+				}
+			}
+		}
+		
+		function Draw_Fairys() {
+			var keys = Object.keys(_fairys);
+			for (var f = 0, len = keys.length; f < len; f++) {
+				var fairy = _fairys[keys[f]];
+				
+				var pos = new Vector(0,0).Set(fairy.pos).Sub(_offset);
+				
+				_ctx.font = "0.8em Ubuntu";
+				
+				_ctx.fillStyle = 'black';
+				
+				_ctx.textAlign = "center";
+				_ctx.fillText(fairy.name, pos.x, pos.y-20);
+				
+				_ctx.fillRect( pos.x-10, pos.y-10, 20, 20 );
+			}
+		}
+		
+		Init();
+		
+		// Socket
+		// Receive Data List
+		_socket.on('data', function(data) {
+			switch(data.type) {
+				case 'ability_list':
+					Set_Ability(data.data);
+					break;
+				case 'map':
+					_map = data.data;
+					break;
+				case 'fairys':
+					_fairys = data.data;
+					break;
+			}
+		});
+		
+		// Receive In Game Sign
+		_socket.on('joinGame', function(data){
+			if (data.check) {
+				_state = {
+					exe : Wait_Data
+				};
+				
+				_socket.emit('data', 'map');
+				
+				Main_Loop();
+			}
+		});
+	</script>
+</body>
+</html>
