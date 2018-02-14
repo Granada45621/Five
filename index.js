@@ -20,6 +20,8 @@ var _ability;	// Ability List
 
 var _shortArea;
 
+var _time;
+
 // Function
 // Function Init(Setting Variables)
 function Init() {
@@ -54,6 +56,8 @@ function Init() {
 	_abilitys = ['dagger', 'telekinesis'];
 	
 	_shortArea = {};		// 구역별 요정 모음
+	
+	_time = Date.now();
 }
 
 function Join_Game(data, socket) {
@@ -90,19 +94,24 @@ function Join_Game(data, socket) {
 }
 
 function Main_Loop() {
+	var now = Date.now();
+	var tick = (now - _time) / 1000;
+	
 	var keys = Object.keys(_fairys);
 	for (var f = 0, len = keys.length; f < len; f++) {
 		var fairy = _fairys[keys[f]];
-		fairy.Move(10, _map, Vector);
+		fairy.Move(tick, _map, Vector);
 	}
 	
 	io.emit('data', {type : 'fairys', data : _fairys});
+	
+	_time = now;
 }
 
 // Execute Init
 Init();
 
-setInterval(Main_Loop, 10);
+setInterval(Main_Loop, 1000/120);
 
 // Send Client File
 app.get('/', function(req, res) {

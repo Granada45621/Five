@@ -35,48 +35,50 @@ class Fairy {
 		var e = this.event;
 		
 		// Gravity
-		this.velocity.y += (20 / 1000) * tick;
+		this.velocity.y += (10) * tick;
 		
 		if (e.mousepos) {
 			if (e.mousepos.x > 40) {
-				this.movevelocity.x += (10 / 1000) * tick;
+				this.movevelocity.x += (10) * tick;
 			} else if (e.mousepos.x < -40) {
-				this.movevelocity.x += (-10 / 1000) * tick;
+				this.movevelocity.x += (-10) * tick;
 			} else {
-				this.movevelocity.x = this.movevelocity.x / 10;
+				this.movevelocity.x /= (200) * tick;
 			}
 		}
 		
 		if (e.jump) {
 			e.jump = false;
-			this.movevelocity.y -= 10;
+			this.movevelocity.y = -(900 * tick);
 			this.velocity.y = 0;
+		} else {
+			this.movevelocity.y += 5 * tick;
 		}
 		
 		// Velocity Overflow Check
-		if (this.velocity.y >= 16) {
-			this.velocity.y = 16;
-		} else if (this.velocity.y <= -16) {
-			this.velocity.y = -16;
+		if (this.velocity.y >= 1800 * tick) {
+			this.velocity.y = 1800 * tick;
+		} else if (this.velocity.y <= -1800 * tick) {
+			this.velocity.y = -1800 * tick;
 		}
 		
-		if (this.velocity.x >= 16) {
-			this.velocity.x = 16;
-		} else if (this.velocity.x <= -16) {
-			this.velocity.x = -16;
+		if (this.velocity.x >= 1800 * tick) {
+			this.velocity.x = 1800 * tick;
+		} else if (this.velocity.x <= -1800 * tick) {
+			this.velocity.x = -1800 * tick;
 		}
 		
 		// Move Velocity Overflow Check
-		if (this.movevelocity.y >= 10) {
-			this.movevelocity.y = 10;
-		} else if (this.movevelocity.y <= -10) {
-			this.movevelocity.y = -10;
+		if (this.movevelocity.y >= 0 * tick) {
+			this.movevelocity.y = 0 * tick;
+		} else if (this.movevelocity.y <= -900 * tick) {
+			this.movevelocity.y = -900 * tick;
 		}
 		
-		if (this.movevelocity.x >= 4) {
-			this.movevelocity.x = 4;
-		} else if (this.movevelocity.x <= -4) {
-			this.movevelocity.x = -4;
+		if (this.movevelocity.x >= 300 * tick) {
+			this.movevelocity.x = 300 * tick;
+		} else if (this.movevelocity.x <= -300 * tick) {
+			this.movevelocity.x = -300 * tick;
 		}
 		
 		
@@ -88,7 +90,7 @@ class Fairy {
 			var pos = this.pos.Get_Clone().Add([0,vel.y+10]);	// Down
 			var cell_pos = new Vector( parseInt(pos.x/size), parseInt(pos.y/size) );
 			
-			if (cell_pos.Check_Range(0,_map.size.x,0,_map.size.y)) {
+			if (cell_pos.Check_Range(1,_map.size.x,1,_map.size.y)) {
 				var going = _map.map[cell_pos.y][cell_pos.x];
 				if (going.type == 'wall')
 					collide = ['down', cell_pos];
@@ -99,7 +101,7 @@ class Fairy {
 			var pos = this.pos.Get_Clone().Add([0,vel.y-10]);	// Up
 			var cell_pos = new Vector( parseInt(pos.x/size), parseInt(pos.y/size) );
 			
-			if (cell_pos.Check_Range(0,_map.size.x,0,_map.size.y)) {
+			if (cell_pos.Check_Range(1,_map.size.x,1,_map.size.y)) {
 				var going = _map.map[cell_pos.y][cell_pos.x];
 				if (going.type == 'wall')
 					collide = ['top', cell_pos];
@@ -126,7 +128,7 @@ class Fairy {
 			var pos = this.pos.Get_Clone().Add([vel.x+10,0]);	// Right
 			var cell_pos = new Vector( parseInt(pos.x/size), parseInt(pos.y/size) );
 			
-			if (cell_pos.Check_Range(0,_map.size.x,0,_map.size.y)) {
+			if (cell_pos.Check_Range(1,_map.size.x,1,_map.size.y)) {
 				var going = _map.map[cell_pos.y][cell_pos.x];
 				if (going.type == 'wall')
 					collide = ['right', cell_pos];
@@ -137,7 +139,7 @@ class Fairy {
 			var pos = this.pos.Get_Clone().Add([vel.x-10,0]);	// Left
 			var cell_pos = new Vector( parseInt(pos.x/size), parseInt(pos.y/size) );
 			
-			if (cell_pos.Check_Range(0,_map.size.x,0,_map.size.y)) {
+			if (cell_pos.Check_Range(1,_map.size.x,1,_map.size.y)) {
 				var going = _map.map[cell_pos.y][cell_pos.x];
 				if (going.type == 'wall')
 					collide = ['left', cell_pos];
@@ -157,8 +159,13 @@ class Fairy {
 			}
 		}
 		
+		//var clone = this.pos.Get_Clone();
+		
 		this.pos.y += this.velocity.y + this.movevelocity.y;
 		this.pos.x += this.velocity.x + this.movevelocity.x;
+		
+		/*var d = this.pos.Get_Clone().Sub(clone);
+		console.log(d, tick);*/
 	}
 }
 
