@@ -59,7 +59,9 @@ function Init() {
 	
 	_fairys = {};
 	
-	_shortArea = {};		// 구역별 요정 모음
+	_shortCut = {
+		fairys : {}		// 구역별 요정 모음
+	};
 	
 	_time = Date.now();
 	
@@ -112,6 +114,8 @@ function Main_Loop() {
 	var now = Date.now();
 	var tick = (now - _time) / 1000;
 	
+	_shortCut.fairys = {};
+	
 	var keys = Object.keys(_fairys);
 	for (var f = 0, len = keys.length; f < len; f++) {
 		var fairy = _fairys[keys[f]];
@@ -131,6 +135,19 @@ function Main_Loop() {
 			
 			_bullets.push( bul );
 		}
+		
+		// Insert ShortCut
+		var pos = new Vector(0,0).Set(fairy.pos);
+		
+		pos.x = parseInt( pos.x / 50 );
+		pos.y = parseInt( pos.y / 50 );
+		
+		var string = pos.Get_String();
+		if (string in _shortCut.fairys) {
+			_shortCut.fairys[string].push(fairy);
+		} else {
+			_shortCut.fairys[string] = [fairy];
+		}
 	}
 	
 	var alivebullet = [];
@@ -141,6 +158,7 @@ function Main_Loop() {
 			alivebullet.push(bullet);
 			
 			bullet.Main(Date.now()-_time, Vector);
+			bullet.Collide(_map, _shortCut, Vector);
 		}
 	}
 	
