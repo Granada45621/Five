@@ -6,6 +6,7 @@ var io;
 // JIY Modules
 var Vector;
 var Noise;
+var Gun;
 
 // JIY Class
 var Map;
@@ -16,11 +17,15 @@ var Fairy;
 var _map;		// Map
 var _fairys;	// Players
 
-var _ability;	// Ability List
-
 var _shortArea;
 
 var _time;
+
+var _gravity;
+
+var _bullets;
+
+var _bullet;
 
 // Function
 // Function Init(Setting Variables)
@@ -38,39 +43,47 @@ function Init() {
 	Map = require('./jiy_class/map.js');
 	MapCell = require('./jiy_class/map_cell.js');
 	Fairy = require('./jiy_class/fairy.js');
+	Gun = require('./jiy_class/gun.js');
 	
 	// Define Game Variables
 	_map = new Map();
 	_map.Set({
 		map : [],
-		size : new Vector(130,130),
+		size : new Vector(80,80),
 		tile : {
-			size : 100
+			size : 100,
 		},
-		seed : 562039723546
+		seed : 562039723546,
 	});
 	_map.Create_Map(Noise, MapCell, Vector);
 	
 	_fairys = {};
 	
-	_abilitys = ['dagger', 'telekinesis'];
-	
 	_shortArea = {};		// 구역별 요정 모음
 	
 	_time = Date.now();
+	
+	_gravity = 10;
+	
+	_bullets = [];
+	
+	_bullet = {
+		nb10 : require('./jiy_bullets/nb10.js'),
+	};
 }
 
 function Join_Game(data, socket) {
 	var fairy = new Fairy();
 	var indata = {
 		name : data.name,
-		ability : data.ability,
 		
 		pos : false,
 		velocity : new Vector(0,0),
 		movevelocity : new Vector(0,0),
 		
-		focus : 10
+		focus : 10,
+		
+		gun : new Gun(),
 	};
 	
 	var size = _map.tile.size;
@@ -85,10 +98,12 @@ function Join_Game(data, socket) {
 		}
 	} while (indata.pos == false);
 	
-	console.log(`\nName : ${indata.name}\nAbility : ${indata.ability}\n`);
+	console.log(`\nName : ${indata.name}\n`);
 	
 	fairy.Set(indata);
 	_fairys[fairy.name] = fairy;
+	
+	fairy.gun.Set({bullet : 'nb10'});
 	
 	return fairy;
 }
@@ -100,10 +115,39 @@ function Main_Loop() {
 	var keys = Object.keys(_fairys);
 	for (var f = 0, len = keys.length; f < len; f++) {
 		var fairy = _fairys[keys[f]];
-		fairy.Move(tick, _map, Vector);
+		var shot = fairy.Shot(tick, Vector);
+		
+		fairy.Move(tick, _map, _gravity, Vector);
+		
+		if (shot == 'shot') {
+			var bul = new _bullet[fairy.gun.bullet]();
+			var data = {
+				name : fairy.name,
+				direction : fairy.event.direction,
+				pos : fairy.pos,
+			};
+			
+			bul.Shot(data);
+			
+			_bullets.push( bul );
+		}
 	}
 	
+	var alivebullet = [];
+	for (var b = 0, len = _bullets.length; b < len; b++) {
+		var bullet = _bullets[b];
+		
+		if (bullet.state == 'alive') {
+			alivebullet.push(bullet);
+			
+			bullet.Main(Date.now()-_time, Vector);
+		}
+	}
+	
+	_bullets = alivebullet;
+	
 	io.emit('data', {type : 'fairys', data : _fairys});
+	io.emit('data', {type : 'bullets', data : _bullets});
 	
 	_time = now;
 }
@@ -125,14 +169,11 @@ app.get('/jiy_modules/vector.js', function(req, res) {
 io.on('connection', function(socket) {
 	var player;
 	
-	socket.emit('data', {type : 'ability_list', data : _abilitys});
-	
 	socket.on('joinGame', function(data) {
 		if (data.name in _fairys) {
 			socket.emit('joinGame', {check : false});
 		} else {
 			player = Join_Game(data, socket);
-			event = {};
 			socket.emit('joinGame', {check : true});
 		}
 	});
@@ -143,10 +184,37 @@ io.on('connection', function(socket) {
 			switch(data.type) {
 				case 'mousemove':
 					player.event.mousepos = data.pos;
+					player.event.direction = data.direction;
+					break;
+				case 'keydown':
+					if (data.keyCode == 87) {
+						if (!(player.event.jump)) {
+							player.event.jump = 'jump';
+						}
+					}
+					if (data.keyCode == 68) {
+						player.event.move = 'right';
+					}
+					if (data.keyCode == 65) {
+						player.event.move = 'left';
+					}
+					break;
+				case 'keyup':
+					if (data.keyCode == 87) {
+						player.event.jump = false;
+					}
+					if (data.keyCode == 68 || data.keyCode == 65) {
+						player.event.move = false;
+					}
 					break;
 				case 'mousedown':
-					if (data.button == 2){
-						player.event.jump = true;
+					if (data.button == 0) {
+						player.event.shot = true;
+					}
+					break;
+				case 'mouseup':
+					if (data.button == 0) {
+						player.event.shot = false;
 					}
 					break;
 			}
@@ -167,6 +235,9 @@ io.on('connection', function(socket) {
 				type = 'fairys';
 				data = _fairys;
 				break;
+			case 'bullets':
+				type = 'bullets';
+				data = _bullets;
 		}
 		socket.emit('data', {type : type, data : data});
 	});

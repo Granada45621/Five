@@ -96,22 +96,15 @@
 				캐릭터 이름 : <input id="player_name" type="text" name="name" size="30" value="Granada">
 			</div>
 			<br>
-			<div>
+			<!--<div>
 				<header>
 					<h3>Choice Ability</h3>
-					<!--<small>2개 까지 선택 가능</small>-->
+					<small>2개 까지 선택 가능</small>
 				</header>
-				<article id="ability_wrap">
-					<!--
-					<div class="ability_box" onclick="">
-						<h3>Dagger</h3>
-					</div>
-					-->
-				</article>
-			</div>
+			</div>-->
 			<br>
 			<div>
-				<button onclick="Join_Game();">Get In Game</button>
+				<button onclick="Join_Game();">Join</button>
 			</div>
 		</section>
 	</div>
@@ -135,6 +128,8 @@
 		
 		var _fairys;
 		
+		var _bullets;
+		
 		function Init() {
 			// Canvas Draw Setting
 			_canvas = document.getElementById('canvas');
@@ -147,7 +142,6 @@
 			// Profile Setting
 			_profile = {
 				name : false,
-				ability : false
 			};
 			
 			// State Init
@@ -155,53 +149,20 @@
 			
 			// Offset
 			_offset = new Vector(0,0);
+			
+			// Bullet
+			_bullets = false;
 		}
 		
 		// Before Start Game
 		function Join_Game() {
 			_profile.name = document.getElementById('player_name').value;
 			
-			if (_profile.name && _profile.ability) {
+			if (_profile.name) {
 				_socket.emit('joinGame', _profile);
 			} else {
-				alert('이름을 입력하고 능력을 선택해 주세요.');
+				alert('이름을 선택해 주세요.');
 			}
-		}
-		
-		function Set_Ability(data) {
-			var wrap = document.getElementById('ability_wrap');
-			var text = '';
-			
-			for (var t = 0, len = data.length; t < len; t++) {
-				var str = data[t];
-				var ab = str.charAt(0).toUpperCase() + str.slice(1);
-				
-				text += `
-					<div class="ability_box" onclick="Select_Ability('${str}');">
-						<h3>${ab}</h3>
-					</div>
-				`;
-			}
-			
-			wrap.innerHTML = text;
-		}
-		
-		function Select_Ability(name) {
-			_profile.ability = name;
-			
-			var wrap = document.getElementById('ability_wrap');
-			var text = '';
-			
-			var str = name;
-			var ab = str.charAt(0).toUpperCase() + str.slice(1);
-
-			text += `
-				<div class="ability_box">
-					<h3>${ab}</h3>
-				</div>
-			`;
-			
-			wrap.innerHTML = text;
 		}
 		
 		// Loop
@@ -213,7 +174,7 @@
 		
 		// Wating Data Setting
 		function Wait_Data() {
-			if (_map && _fairys) {
+			if (_map && _fairys && _bullets) {
 				_state = {
 					exe : Game_Play
 				};
@@ -234,6 +195,7 @@
 			// Draw
 			Draw_Map();
 			Draw_Fairys();
+			Draw_Bullets();
 		}
 		
 		function Camera() {
@@ -295,20 +257,32 @@
 			}
 		}
 		
+		function Draw_Bullets() {
+			for (var b = 0, len = _bullets.length; b < len; b++) {
+				var bul = _bullets[b];
+				var size = bul.spec.size;
+				
+				bul.pos = new Vector(0,0).Set(bul.pos).Sub(_offset);
+				
+				_ctx.fillStyle = 'red';
+				_ctx.fillRect( bul.pos.x-size/2, bul.pos.y-size/2, size, size );
+			}
+		}
+		
 		Init();
 		
 		// Socket
 		// Receive Data List
 		_socket.on('data', function(data) {
 			switch(data.type) {
-				case 'ability_list':
-					Set_Ability(data.data);
-					break;
 				case 'map':
 					_map = data.data;
 					break;
 				case 'fairys':
 					_fairys = data.data;
+					break;
+				case 'bullets':
+					_bullets = data.data;
 					break;
 			}
 		});
@@ -329,7 +303,11 @@
 		// Event
 		function Event() {
 			document.addEventListener("keydown", function(e) {
-				_socket.emit('event', {type: 'keydown'});
+				_socket.emit('event', {type: 'keydown', keyCode: e.keyCode});
+			}, false);
+			
+			document.addEventListener("keyup", function(e) {
+				_socket.emit('event', {type: 'keyup', keyCode: e.keyCode});
 			}, false);
 			
 			document.addEventListener("mousemove", function(e) {
@@ -337,11 +315,19 @@
 				pos.x = e.clientX - window.innerWidth/2;
 				pos.y = e.clientY - window.innerHeight/2;
 				
-				_socket.emit('event', {type: 'mousemove', pos: pos});
+				var f = _fairys[_profile.name];
+				var mousepos = new Vector(e.clientX, e.clientY);
+				var direction = new Vector(window.innerWidth/2, window.innerHeight/2).Get_Direction(mousepos);
+				
+				_socket.emit('event', {type: 'mousemove', pos: pos, direction: direction});
 			}, false);
 			
 			document.addEventListener("mousedown", function(e) {
 				_socket.emit('event', {type: 'mousedown', button: e.button});
+			}, false);
+			
+			document.addEventListener("mouseup", function(e) {
+				_socket.emit('event', {type: 'mouseup', button: e.button});
 			}, false);
 		}
 	</script>

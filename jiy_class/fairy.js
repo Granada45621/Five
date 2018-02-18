@@ -6,11 +6,11 @@ class Fairy {
 		this.velocity;			// 강제 가속도
 		this.movevelocity;		// 조정 가속도
 		
-		this.ability;
-		
-		this.focus;		// 정신 집중
+		//this.focus;				// 정신 집중
 		
 		this.event;
+		
+		this.gun;
 	}
 	
 	Set(data) {
@@ -20,35 +20,52 @@ class Fairy {
 		this.velocity = data.velocity;
 		this.movevelocity = data.movevelocity;
 		
-		this.ability = data.ability;
-		
-		this.focus = data.focus;
+		//this.focus = data.focus;
 		
 		this.event = {
 			mousepos : false,		// Vector
+			direction : false,		// Number
 			jump : false,
+			move : false,
+			shot : false,
 		};
+		
+		this.gun = data.gun;
 	}
 	
-	Move(tick, _map, Vector) {
+	Shot(tick, Vector) {
+		var re = 'delay';
+		
+		if (this.event.shot){
+			if (this.gun.state.cooltime <= 0) {
+				this.gun.Shot();
+				
+				re = 'shot';
+			}
+		}
+		
+		this.gun.Main(tick);
+		
+		return re;
+	}
+	
+	Move(tick, _map, _gravity, Vector) {
 		var size = _map.tile.size;
 		var e = this.event;
 		
 		// Gravity
-		this.velocity.y += (10) * tick;
+		this.velocity.y += (_gravity) * tick;
 		
-		if (e.mousepos) {
-			if (e.mousepos.x > 40) {
-				this.movevelocity.x += (10) * tick;
-			} else if (e.mousepos.x < -40) {
-				this.movevelocity.x += (-10) * tick;
-			} else {
-				this.movevelocity.x /= (200) * tick;
-			}
+		if (e.move == 'right') {
+			this.movevelocity.x += (20) * tick;
+		} else if (e.move == 'left') {
+			this.movevelocity.x += (-20) * tick;
+		} else if (!(e.move)) {
+			this.movevelocity.x /= (200) * tick;
 		}
 		
-		if (e.jump) {
-			e.jump = false;
+		if (e.jump == 'jump') {
+			e.jump = 'wait';
 			this.movevelocity.y = -(900 * tick);
 			this.velocity.y = 0;
 		} else {

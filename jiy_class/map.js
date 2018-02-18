@@ -34,16 +34,16 @@ class Map {
 				// Define Wall
 				var value = 0;
 				
-				if ((y % 5) == 0) {
-					value += 0.5;
+				if ((y % 4) == 0) {
+					value += 0.8;
 				}
 				
 				if ((x % 8) == 0) {
-					value += 0.2;
+					value += 0.3;
 				}
 				
-				value += Noise.perlin2(x / 4, y / 4)+0.01;
-				if (value >= 0.35){
+				value += Noise.perlin2(x / 4, y / 4);
+				if (value >= 0.6){
 					data.type = 'wall';
 				}
 				
