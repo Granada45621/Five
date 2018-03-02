@@ -130,6 +130,10 @@
 		
 		var _bullets;
 		
+		var _effects;
+		
+		var _objects;
+		
 		function Init() {
 			// Canvas Draw Setting
 			_canvas = document.getElementById('canvas');
@@ -152,6 +156,12 @@
 			
 			// Bullet
 			_bullets = false;
+			
+			// Effect
+			_effects = false;
+			
+			// Object
+			_objects = false;
 		}
 		
 		// Before Start Game
@@ -174,7 +184,7 @@
 		
 		// Wating Data Setting
 		function Wait_Data() {
-			if (_map && _fairys && _bullets) {
+			if (_map && _fairys && _bullets && _effects && _objects) {
 				_state = {
 					exe : Game_Play
 				};
@@ -196,6 +206,7 @@
 			Draw_Map();
 			Draw_Fairys();
 			Draw_Bullets();
+			Draw_Effects();
 		}
 		
 		function Camera() {
@@ -269,6 +280,21 @@
 			}
 		}
 		
+		function Draw_Effects() {
+			for (var e = 0, len = _effects.num.length; e < len; e++) {
+				var effect = _effects.num[e];
+				
+				effect.pos = new Vector(0,0).Set(effect.pos).Sub(_offset);
+				
+				_ctx.font = '0.6em Ubuntu';
+				
+				_ctx.fillStyle = 'red';
+				
+				_ctx.textAlign = 'center';
+				_ctx.fillText(effect.num, effect.pos.x, effect.pos.y);
+			}
+		}
+		
 		Init();
 		
 		// Socket
@@ -283,6 +309,12 @@
 					break;
 				case 'bullets':
 					_bullets = data.data;
+					break;
+				case 'effects':
+					_effects = data.data;
+					break;
+				case 'objects':
+					_objects = data.data;
 					break;
 			}
 		});

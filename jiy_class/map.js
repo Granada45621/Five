@@ -35,7 +35,7 @@ class Map {
 				var value = 0;
 				
 				if ((y % 4) == 0) {
-					value += 0.8;
+					value += 0.6;
 				}
 				
 				if ((x % 8) == 0) {
@@ -43,7 +43,7 @@ class Map {
 				}
 				
 				value += Noise.perlin2(x / 4, y / 4);
-				if (value >= 0.6){
+				if (value >= 0.5){
 					data.type = 'wall';
 				}
 				

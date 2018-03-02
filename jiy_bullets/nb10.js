@@ -37,8 +37,9 @@ class Bullet_NB10 {
 		};
 	}
 	
-	Collide(_map, _shortCut, Vector) {
+	/*Collide(_map, _shortCut, Vector) {
 		// Wall Collide
+		var re = false;
 		var pos = new Vector(0,0).Set(this.pos);
 		
 		pos.x = parseInt( pos.x / _map.tile.size );
@@ -51,20 +52,22 @@ class Bullet_NB10 {
 		}
 		
 		// Fairy Collide
+		var br = false;
 		var cpoints = this.data.collidePoints;
+		
 		for (var cp = 0, len = cpoints.length; cp < len; cp++){
 			var pos = new Vector(0,0).Set(cpoints[cp]);
 			var cell = pos.Get_Clone();
 			
-			cell.x = parseInt( pos.x / 50 );
-			cell.y = parseInt( pos.y / 50 );
+			cell.x = parseInt( pos.x / _shortCut.size );
+			cell.y = parseInt( pos.y / _shortCut.size );
 			
 			var string = cell.Get_String();
 			
 			if (string in _shortCut.fairys) {
 				var fairys = _shortCut.fairys[string];
 				
-				for (var f = 0, len = fairys.length; f < len; f++) {
+				for (var f = 0, leng = fairys.length; f < leng; f++) {
 					var fairy = fairys[f];
 					
 					// Collide Check
@@ -88,30 +91,37 @@ class Bullet_NB10 {
 							rect1.y < rect2.y + rect2.height &&
 							rect1.height + rect1.y > rect2.y) {
 							this.state = 'dead';
+							re = {
+								num : `-${this.spec.damage}`,
+								pos : pos.Get_Clone(),
+								time : 0.8,
+								state : 'alive',
+							};
+							br = true;
 						}
 					}
 				}
 			}
 		}
 		
-		this.data.collidePoints = [];
-	}
+		return re;
+	}*/
 	
 	Main(tick, Vector) {
 		var speed = (this.spec.speed/1000) * tick;
 		var pos = new Vector(0,0).Set(this.pos);
 		var target = pos.Get_Clone().Set_Move(speed, this.direction);
 		
+		this.data.collidePoints = [];
+		
 		do {
 			pos.Set_Move(1, this.direction);
-			
-			//this.data.distance += pos.Get_Distance(this.pos);
 			
 			if (this.data.distance >= this.spec.range) {
 				this.state = 'dead';
 				break;
 			} else {
-				this.data.collidePoints.push(pos);
+				this.data.collidePoints.push(pos.Get_Clone());
 			}
 			
 			this.pos = pos;

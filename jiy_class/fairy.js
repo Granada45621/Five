@@ -10,6 +10,7 @@ class Fairy {
 		
 		this.event;
 		
+		this.guns;
 		this.gun;
 	}
 	
@@ -30,21 +31,30 @@ class Fairy {
 			shot : false,
 		};
 		
+		this.guns = {
+			'0' : false,
+			'1' : false,
+			'2' : false,
+			select : false,
+		};
 		this.gun = data.gun;
 	}
 	
 	Shot(tick, Vector) {
 		var re = 'delay';
 		
-		if (this.event.shot){
-			if (this.gun.state.cooltime <= 0) {
-				this.gun.Shot();
-				
-				re = 'shot';
+		if (this.gun) {
+			
+			if (this.event.shot){
+				if (this.gun.state.cooltime <= 0) {
+					this.gun.Shot();
+					
+					re = 'shot';
+				}
 			}
+			
+			this.gun.Main(tick);
 		}
-		
-		this.gun.Main(tick);
 		
 		return re;
 	}

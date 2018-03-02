@@ -1,7 +1,7 @@
 class Gun {
 	constructor() {
 		this.spec = {
-			cooltime : 0.2,
+			cooltime : 0.1,
 		};
 		
 		this.state = {
